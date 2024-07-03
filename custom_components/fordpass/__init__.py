@@ -79,10 +79,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         "fordpass_options_listener": fordpass_options_listener
     }
 
-    for component in PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, component)
-        )
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     async def async_refresh_status_service(service_call):
         await hass.async_add_executor_job(
