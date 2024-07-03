@@ -20,6 +20,7 @@ from .const import (
     CONF_PRESSURE_UNIT,
     DEFAULT_DISTANCE_UNIT,
     DEFAULT_PRESSURE_UNIT,
+    DEFAULT_REGION,
     DOMAIN,
     MANUFACTURER,
     REGION,
@@ -61,7 +62,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         region = entry.data[REGION]
     else:
         _LOGGER.debug("CANT GET REGION")
-        region = "North America & Canada"
+        region = DEFAULT_REGION
     coordinator = FordPassDataUpdateCoordinator(hass, user, password, vin, region, update_interval, 1)
 
     await coordinator.async_refresh()  # Get initial data
