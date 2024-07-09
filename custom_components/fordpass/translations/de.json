@@ -22,9 +22,9 @@
                 "title": "Selecteer voertuig om toe te voegen",
                 "description": "Alleen voertuigen die momenteel niet zijn toegevoegd, worden weergegeven",
                 "data": {
-                  "vin": "VIN"
+                    "vin": "VIN"
                 }
-              }
+            }
         }
     },
     "options": {
