@@ -6,7 +6,7 @@ import string
 import hashlib
 import voluptuous as vol
 from homeassistant import config_entries, core, exceptions
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_PASSWORD, CONF_URL, CONF_USERNAME
 from homeassistant.core import callback
 from base64 import urlsafe_b64encode
 
@@ -85,7 +85,6 @@ async def validate_input(hass: core.HomeAssistant, data):
 
     try:
         result = await hass.async_add_executor_job(vehicle.auth)
-        _LOGGER.debug
     except Exception as ex:
         raise InvalidAuth from ex
     try:
@@ -190,7 +189,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_show_form(
                 step_id="token", data_schema=vol.Schema(
                     {
-                        vol.Optional("url", default=self.generate_url(self.region)): str,
+                        vol.Optional(CONF_URL, default=self.generate_url(self.region)): str,
                         vol.Required("tokenstr"): str,
                     }
                 ), errors=errors
@@ -221,8 +220,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.base64_url_encode(hashengine.digest()).decode('utf-8')
 
     def validNumber(self, phone_number):
-        pattern = re.compile("^([+]\d{2})?\d{10}$", re.IGNORECASE)
-        pattern2 = re.compile("^([+]\d{2})?\d{9}$", re.IGNORECASE)
+        pattern = re.compile(r'^([+]\d{2})?\d{10}$', re.IGNORECASE)
+        pattern2 = re.compile(r'^([+]\d{2})?\d{9}$', re.IGNORECASE)
         return pattern.match(phone_number) is not None or pattern2.match(phone_number) is not None
 
     async def async_step_vin(self, user_input=None):
