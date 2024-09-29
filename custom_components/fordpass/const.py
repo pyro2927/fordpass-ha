@@ -94,16 +94,16 @@ REGIONS = {
     },
     "UK&Europe": {
         "region": "1E8C7794-FF5F-49BC-9596-A1E0C86C5B19",
-        "locale": "EN-IE",
+        "locale": "en-IE",
         "locale_short": "IE", #Temp fix 
         "locale_url": "https://login.ford.ie",
         "countrycode": "GBR"
     },
     "Australia": {
         "region": "5C80A6BB-CF0D-4A30-BDBF-FC804B5C1A98",
-        "locale": "EN-AU",
+        "locale": "en-AU",
         "locale_short": "AUS",
-        "locale_url": "https://login.ford.com.au",
+        "locale_url": "https://login.ford.com",
         "countrycode": "AUS"
     },
     "USA": {
