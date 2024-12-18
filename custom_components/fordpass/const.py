@@ -101,9 +101,9 @@ REGIONS = {
     },
     "Australia": {
         "region": "5C80A6BB-CF0D-4A30-BDBF-FC804B5C1A98",
-        "locale": "EN-AU",
+        "locale": "en-AU",
         "locale_short": "AUS",
-        "locale_url": "https://login.ford.com.au",
+        "locale_url": "https://login.ford.com",
         "countrycode": "AUS"
     },
     "USA": {
