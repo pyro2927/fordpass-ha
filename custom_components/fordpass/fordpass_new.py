@@ -79,14 +79,14 @@ class Vehicle:
     def base64_url_encode(self, data):
         """Encode string to base64"""
         return urlsafe_b64encode(data).rstrip(b'=')
-    
+
     def generate_tokens(self, urlstring, code_verifier):
-        code_new = urlstring.replace("fordapp://userauthorized/?code=","")
+        code_new = urlstring.replace("fordapp://userauthorized/?code=", "")
         print(code_new)
         print(self.country_code)
         print(code_verifier)
         data = {
-            "client_id" : "09852200-05fd-41f6-8c21-d36d3497dc64",
+            "client_id": "09852200-05fd-41f6-8c21-d36d3497dc64",
             "grant_type": "authorization_code",
             "code_verifier": code_verifier,
             "code": code_new,
@@ -99,11 +99,11 @@ class Vehicle:
             **loginHeaders,
         }
         req = requests.post(
-                f"{FORD_LOGIN_URL}/4566605f-43a7-400a-946e-89cc9fdb0bd7/B2C_1A_SignInSignUp_{self.country_code}/oauth2/v2.0/token",
-                headers=headers,
-                data=data,
-                verify=False
-            )
+            f"{FORD_LOGIN_URL}/4566605f-43a7-400a-946e-89cc9fdb0bd7/B2C_1A_SignInSignUp_{self.country_code}/oauth2/v2.0/token",
+            headers=headers,
+            data=data,
+            verify=False
+        )
         print(req.status_code)
         print(req.text)
         return self.generate_fulltokens(req.json())
@@ -278,8 +278,6 @@ class Vehicle:
             _LOGGER.debug("401 response stage 2: refresh stage 1 token")
             self.auth()
 
-
-
     def __acquire_token(self):
         # Fetch and refresh token as needed
         # If file exists read in token file and check it's valid
@@ -366,6 +364,7 @@ class Vehicle:
             os.remove("/tmp/token.txt")
         if os.path.isfile(self.token_location):
             os.remove(self.token_location)
+
     def refresh_auto_token(self, result):
         auto_token = self.get_auto_token()
         _LOGGER.debug("AUTO Refresh")
@@ -373,12 +372,13 @@ class Vehicle:
         self.auto_token_refresh = auto_token["refresh_token"]
         self.auto_expires_at = time.time() + auto_token["expires_in"]
         if self.save_token:
-            #result["expiry_date"] = time.time() + result["expires_in"]
+            # result["expiry_date"] = time.time() + result["expires_in"]
             result["auto_token"] = auto_token["access_token"]
             result["auto_refresh"] = auto_token["refresh_token"]
             result["auto_expiry"] = time.time() + auto_token["expires_in"]
 
             self.write_token(result)
+
     def get_auto_token(self):
         """Get token from new autonomic API"""
         _LOGGER.debug("Getting Auto Token")
@@ -661,7 +661,6 @@ class Vehicle:
             # New code to hanble checking states table from vehicle data
             response = r.json()
             command_id = response["id"]
-            current_status = response["currentStatus"]
             i = 1
             while i < 14:
                 # Check status every 10 seconds for 90 seconds until command completes or time expires
@@ -686,7 +685,7 @@ class Vehicle:
                 i += 1
                 _LOGGER.debug("Looping again")
                 time.sleep(10)
-            #time.sleep(90)
+            # time.sleep(90)
             return False
         return False
 

@@ -33,7 +33,7 @@ DEFAULT_REGION = "USA"
 SENSORS = {
     "odometer": {"icon": "mdi:counter", "state_class": "total", "device_class": "distance", "api_key": "odometer", "measurement": "km"},
     "fuel": {"icon": "mdi:gas-station", "api_key": ["fuelLevel", "xevBatteryStateOfCharge"], "measurement": "%"},
-    "battery": {"icon": "mdi:car-battery", "device_class": "battery","state_class": "measurement", "api_key": "batteryStateOfCharge", "measurement": "%"},
+    "battery": {"icon": "mdi:car-battery", "device_class": "battery", "state_class": "measurement", "api_key": "batteryStateOfCharge", "measurement": "%"},
     "oil": {"icon": "mdi:oil", "api_key": "oilLifeRemaining", "measurement": "%"},
     "tirePressure": {"icon": "mdi:car-tire-alert", "api_key": "tirePressure"},
     # "gps": {"icon": "mdi:radar"},
@@ -41,12 +41,12 @@ SENSORS = {
     "ignitionStatus": {"icon": "hass:power", "api_key": "ignitionStatus"},
     "doorStatus": {"icon": "mdi:car-door", "api_key": "doorStatus"},
     "windowPosition": {"icon": "mdi:car-door", "api_key": "windowStatus"},
-    "lastRefresh": {"icon": "mdi:clock", "device_class": "timestamp", "api_key": "lastRefresh" , "sensor_type": "single"},
+    "lastRefresh": {"icon": "mdi:clock", "device_class": "timestamp", "api_key": "lastRefresh", "sensor_type": "single"},
     "elVeh": {"icon": "mdi:ev-station", "api_key": "xevBatteryRange", "device_class": "distance", "state_class": "measurement", "measurement": "km"},
     "elVehCharging": {"icon": "mdi:ev-station", "api_key": "xevBatteryChargeDisplayStatus"},
     "speed": {"icon": "mdi:speedometer", "device_class": "speed", "state_class": "measurement", "api_key": "speed", "measurement": "km/h"},
     "indicators": {"icon": "mdi:engine-outline", "api_key": "indicators"},
-    "coolantTemp": {"icon": "mdi:coolant-temperature", "api_key": "engineCoolantTemp" ,"state_class": "measurement", "device_class": "temperature", "measurement": "°C"},
+    "coolantTemp": {"icon": "mdi:coolant-temperature", "api_key": "engineCoolantTemp", "state_class": "measurement", "device_class": "temperature", "measurement": "°C"},
     "outsideTemp": {"icon": "mdi:thermometer", "state_class": "measurement", "device_class": "temperature", "api_key": "outsideTemperature", "measurement": "°C"},
     "engineOilTemp": {"icon": "mdi:oil-temperature", "state_class": "measurement", "device_class": "temperature", "api_key": "engineOilTemp", "measurement": "°C"},
     "deepSleep": {"icon": "mdi:power-sleep", "name": "Deep Sleep Mode Active", "api_key": "commandPreclusion", "api_class": "states"},
@@ -68,7 +68,7 @@ SENSORS = {
 
 SWITCHES = {
     "ignition": {"icon": "hass:power"},
-    #"guardmode": {"icon": "mdi:shield-key"}
+    # "guardmode": {"icon": "mdi:shield-key"}
 }
 
 WINDOW_POSITIONS = {
@@ -94,9 +94,9 @@ REGIONS = {
     },
     "UK&Europe": {
         "region": "1E8C7794-FF5F-49BC-9596-A1E0C86C5B19",
-        "locale": "en-IE",
-        "locale_short": "IE", #Temp fix 
-        "locale_url": "https://login.ford.ie",
+        "locale": "EN-GB",
+        "locale_short": "IE",  # Temp fix
+        "locale_url": "https://login.ford.co.uk",
         "countrycode": "GBR"
     },
     "Australia": {
@@ -107,10 +107,10 @@ REGIONS = {
         "countrycode": "AUS"
     },
     "USA": {
-        "region": "71A3AD0A-CF46-4CCF-B473-FC7FE5BC4592", # ???
+        "region": "71A3AD0A-CF46-4CCF-B473-FC7FE5BC4592",  # ???
         "locale": "en-US",
         "locale_short": "USA",
-        "locale_url": "https://login.ford.com", # Reverted from AU to US because it appears to be working
+        "locale_url": "https://login.ford.com",  # Reverted from AU to US because it appears to be working
         "countrycode": "USA"
     },
     "Canada": {
