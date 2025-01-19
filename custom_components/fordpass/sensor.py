@@ -493,8 +493,6 @@ class CarSensor(
                 return self.data
         return None
 
-
-
     @property
     def name(self):
         """Return Sensor Name"""

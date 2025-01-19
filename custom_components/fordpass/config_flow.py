@@ -253,7 +253,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self.login_input[VIN] = user_input["vin"]
             _LOGGER.debug(self.login_input)
             return self.async_create_entry(title=f"Vehicle ({user_input[VIN]})", data=self.login_input)
-        
+
         _LOGGER.debug(self.vehicles)
 
         configured = configured_vehicles(self.hass)
@@ -272,10 +272,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="no_vehicles")
         return self.async_show_form(
             step_id="vehicle",
-            data_schema = vol.Schema(
-            { vol.Required(VIN): vol.In(avaliable_vehicles)}
+            data_schema=vol.Schema(
+                {vol.Required(VIN): vol.In(avaliable_vehicles)}
             ),
-            errors = {}
+            errors={}
         )
 
     @staticmethod
@@ -308,7 +308,7 @@ class OptionsFlow(config_entries.OptionsFlow):
             ): vol.In(DISTANCE_UNITS),
             vol.Optional(
                 DISTANCE_CONVERSION_DISABLED,
-                default = self.config_entry.options.get(
+                default=self.config_entry.options.get(
                     DISTANCE_CONVERSION_DISABLED, DISTANCE_CONVERSION_DISABLED_DEFAULT
                 ),
             ): bool,

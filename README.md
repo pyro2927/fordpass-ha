@@ -67,8 +67,6 @@ Follow the instructions on the [Wiki](https://github.com/itchannel/fordpass-ha/w
 Your car must have the lastest onboard modem functionality and have registered/authorised the fordpass application
 
 ## Services
-
-## Services
 <!-- I haven't looked into these services, but it might be easier to maintain a Wiki with the various services compared to the README. Just a thought. -->
 ### Car Refresh
 I have added a service to poll the car for updates, due to the battery drain I have left this up to you to set the interval. The service to be called is "refresh_status" and can be accessed in home assistant using "fordpas.refresh_status". 
@@ -93,19 +91,26 @@ This service allows you to manually refresh/poll the API without waiting the set
 <!-- Keeping this the same, but it will probably change and update alongside Fordconnect and the new app features -->
 
 - Fuel Level
-- Ignition Status
-- Indicators (Value of various vehicles indicators)
-- Last Refresh
-- FordPass messages and alerts
 - Odometer
+- Lock/Unlock
 - Oil Status
-- Outside Temperature
-- Speed
+- Last known GPS Coordinates/Map
 - Tyre Status
+- Battery Status
+- Ignition Status
+- Alarm Status
+- Individual door statuses
+- Remote Start
+- Window Status (Only if your car supports it!)
+- Last Car Refresh status
+- Car Tracker
+- Supports Multiple Regions
+- Electric Vehicle Support
 - TPMS Sensors
 - Guard Mode (Only supported cars)
 - Deep sleep status
 - Fordpass messages and alerts
 
 ## Disclaimer
+
 This integration is not officially supported by Ford and as such using this integration could result in your account being locked out!

@@ -17,23 +17,13 @@
                     "username": "FordPass gebruikersnaam (e-mailadres)",
                     "vin": "VIN",
                     "region" : "FordPass regio"
-                },
-                "data_description": {
-                    "username": "Hvis du bruker en mobil i stedet for e-post, skriv inn nummeret ditt (minus initial 0), inkluder også + og landskoden (f.eks. +99123456789)"
-                } 
+                }
             },
             "vehicle": {
                 "title": "Selecteer voertuig om toe te voegen",
                 "description": "Alleen voertuigen die niet al zijn toegevoegd zijn zichtbaar",
                 "data": {
                     "vin": "VIN"
-                }
-              },
-              "vin": {
-                "title": "Inserimento manuale del vin",
-                "description": "Inserisci manualmente il numero VIN poiché non è stato possibile trovare veicoli automaticamente.",
-                "data": {
-                    "vin": "Numero di telaio del veicolo"
                 }
             }
         }
