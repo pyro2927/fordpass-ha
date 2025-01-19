@@ -24,27 +24,17 @@ FP_VIN = ""
 REGION = "North America & Canada"
 
 # Automatically redact json? (True or False) False is only recommended if you would like to save your json for personal use
-REDACTION = True
+redaction = True
 
 # Optional: Enter your vehicle year (example: 2023)
 VIC_YEAR = ""
 
 # Optional: Enter your vehicle model (example: Lightning)
-VIC_MODEL = ""
+vicModel = ""
 
 # You can turn off print statements if you want to use this script for other purposes (True or False)
-VERBOSE = True
+verbose = True
 
-
-
-
-
-
-region_lookup = {
-    "UK&Europe": "1E8C7794-FF5F-49BC-9596-A1E0C86C5B19",
-    "Australia": "5C80A6BB-CF0D-4A30-BDBF-FC804B5C1A98",
-    "North America & Canada": "71A3AD0A-CF46-4CCF-B473-FC7FE5BC4592",
-}
 
 def get_autonomic_token(ford_access_token):
     """Get Autonomic API token from FordPass token"""
@@ -69,9 +59,8 @@ def get_autonomic_token(ford_access_token):
 
     except requests.exceptions.HTTPError as errh:
         print(f"HTTP Error: {errh}")
-        # print("Trying refresh token")
-        # get_autonomic_token(fp_refresh)
-        return None
+        print("Trying refresh token")
+        get_autonomic_token(fpRefresh)
     except requests.exceptions.ConnectionError as errc:
         print(f"Error Connecting: {errc}")
         sys.exit()
@@ -115,7 +104,6 @@ def get_vehicle_status(vin, access_token):
         print(f"Timeout Error: {errt}")
     except requests.exceptions.RequestException as err:
         print(f"Something went wrong: {err}")
-    return None
 
 
 def redact_json(data, redaction):
@@ -140,65 +128,6 @@ def redact_json(data, redaction):
     elif isinstance(data, list):
         for item in data:
             redact_json(item, redaction)
-
-
-def vehicle_cap(access_token, region):
-    """Make call to vehicles API"""
-    regionID = region_lookup[region]
-    if region == "Australia":
-        countryheader = "AUS"
-    elif region == "North America & Canada":
-        countryheader = "USA"
-    elif region == "UK&Europe":
-        countryheader = "GBR"
-    else:
-        countryheader = "USA"
-
-    headers = {
-        "Accept": "*/*",
-        "Accept-Language": "en-us",
-        "User-Agent": "FordPass/23 CFNetwork/1408.0.4 Darwin/22.5.0",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Content-Type": "application/json",
-        "Auth-Token": access_token,
-        "Application-Id": regionID,
-        "Countrycode": countryheader,
-        "Locale": "EN-US"
-    }
-
-    data = {
-        "dashboardRefreshRequest": "All"
-    }
-
-    redaction_items = ["VIN", "vin", "vehicleImage"]
-
-    try:
-        response = requests.post(
-            f"https://api.mps.ford.com/api/expdashboard/v1/details/",
-            headers=headers,
-            data=json.dumps(data)
-        )
-        response.raise_for_status()
-        print("Got vehicle capabilities")
-        vehicleCap = response.json()
-        if REDACTION:
-            redact_json(vehicleCap, redaction_items)
-        return vehicleCap
-
-    except requests.exceptions.HTTPError as errh:
-        print(f"HTTP Error: {errh}")
-        # print("Trying refresh token")
-        # get_autonomic_token(fp_refresh)
-        return None
-    except requests.exceptions.ConnectionError as errc:
-        print(f"Error Connecting: {errc}")
-        sys.exit()
-    except requests.exceptions.Timeout as errt:
-        print(f"Timeout Error: {errt}")
-        sys.exit()
-    except requests.exceptions.RequestException as err:
-        print(f"Something went wrong: {err}")
-        sys.exit()
 
 
 if __name__ == "__main__":
@@ -242,16 +171,9 @@ if __name__ == "__main__":
     if VIC_MODEL != "":
         VIC_MODEL = VIC_MODEL.replace(" ", "_")
     else:
-        VIC_MODEL = "my"
+        vicModel = "my"
 
-    fileName = os.path.join(FORD_PASS_DIR, f"{VIC_YEAR}{VIC_MODEL}_status_{current_datetime}{REDACTION_STATUS}.json")
-
-    if vehicle_capability != None:
-        vehicleData = [vehicle_status, vehicle_capability]
-    else:
-        if VERBOSE:
-            print("Unable to get vehicle capability, saving vehicle status")
-        vehicleData = vehicle_status
+    fileName = os.path.join(fordPassDir, f"{vicYear}{vicModel}_status_{current_datetime}{redactionStatus}.json")
 
     # Write the redacted JSON data to the file
     with open(fileName, 'w', encoding="utf-8") as file:

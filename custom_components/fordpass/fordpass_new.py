@@ -12,8 +12,7 @@ import requests
 
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from homeassistant import exceptions
-from .const import REGIONS
+from.const import REGIONS
 
 _LOGGER = logging.getLogger(__name__)
 defaultHeaders = {
@@ -35,7 +34,12 @@ apiHeaders = {
     "Content-Type": "application/json",
 }
 
-
+loginHeaders = {
+    "Accept": "application/json, text/javascript, */*; q=0.01",
+    "Accept-Language": "en-US,en;q=0.5",
+    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1",
+    "Accept-Encoding": "gzip, deflate, br",
+}
 
 NEW_API = True
 
@@ -44,7 +48,7 @@ GUARD_URL = "https://api.mps.ford.com/api"
 SSO_URL = "https://sso.ci.ford.com"
 AUTONOMIC_URL = "https://api.autonomic.ai/v1"
 AUTONOMIC_ACCOUNT_URL = "https://accounts.autonomic.ai/v1"
-#FORD_LOGIN_URL = "https://login.ford.com"
+FORD_LOGIN_URL = "https://login.ford.com"
 
 session = requests.Session()
 
@@ -61,8 +65,7 @@ class Vehicle:
         self.region = REGIONS[region]["region"]
         self.country_code = REGIONS[region]["locale"]
         self.short_code = REGIONS[region]["locale_short"]
-        self.region2 = REGIONS[region]["region"]
-        self.ford_login_url = REGIONS[region]["locale_url"]
+        self.countrycode = REGIONS[region]["countrycode"]
         self.vin = vin
         self.token = None
         self.expires = None
@@ -84,6 +87,51 @@ class Vehicle:
     def base64_url_encode(self, data):
         """Encode string to base64"""
         return urlsafe_b64encode(data).rstrip(b'=')
+
+    def generate_tokens(self, urlstring, code_verifier):
+        code_new = urlstring.replace("fordapp://userauthorized/?code=", "")
+        print(code_new)
+        print(self.country_code)
+        print(code_verifier)
+        data = {
+            "client_id": "09852200-05fd-41f6-8c21-d36d3497dc64",
+            "grant_type": "authorization_code",
+            "code_verifier": code_verifier,
+            "code": code_new,
+            "redirect_uri": "fordapp://userauthorized"
+
+        }
+
+        _LOGGER.debug(data)
+        headers = {
+            **loginHeaders,
+        }
+        req = requests.post(
+            f"{FORD_LOGIN_URL}/4566605f-43a7-400a-946e-89cc9fdb0bd7/B2C_1A_SignInSignUp_{self.country_code}/oauth2/v2.0/token",
+            headers=headers,
+            data=data,
+            verify=False
+        )
+        print(req.status_code)
+        print(req.text)
+        return self.generate_fulltokens(req.json())
+
+    def generate_fulltokens(self, token):
+        data = {"idpToken": token["access_token"]}
+        headers = {**apiHeaders, "Application-Id": self.region}
+        response = requests.post(
+            f"{GUARD_URL}/token/v2/cat-with-b2c-access-token",
+            data=json.dumps(data),
+            headers=headers,
+            verify=False
+        )
+        print(response.status_code)
+        print(response.text)
+        final_tokens = response.json()
+        final_tokens["expiry_date"] = time.time() + final_tokens["expires_in"]
+
+        self.write_token(final_tokens)
+        return True
 
     def generate_hash(self, code):
         """Generate hash for login"""
@@ -315,7 +363,6 @@ class Vehicle:
             _LOGGER.debug("401 response stage 2: refresh stage 1 token")
             self.auth()
 
-
     def __acquire_token(self):
         # Fetch and refresh token as needed
         # If file exists read in token file and check it's valid
@@ -323,6 +370,7 @@ class Vehicle:
         if self.save_token:
             if os.path.isfile(self.token_location):
                 data = self.read_token()
+                _LOGGER.debug(data)
                 self.token = data["access_token"]
                 self.refresh_token = data["refresh_token"]
                 self.expires_at = data["expiry_date"]
@@ -350,7 +398,6 @@ class Vehicle:
         _LOGGER.debug(self.auto_token)
         _LOGGER.debug(self.auto_expires_at)
         if self.auto_token is None or self.auto_expires_at is None:
-            #self.auth()
             result = self.refresh_token_func(data)
             _LOGGER.debug("Result Above for new TOKEN")
             self.refresh_auto_token(result)
@@ -408,9 +455,9 @@ class Vehicle:
         _LOGGER.debug("AUTO Refresh")
         self.auto_token = auto_token["access_token"]
         self.auto_token_refresh = auto_token["refresh_token"]
-        self.auto_expires_at = time.time() + result["expires_in"]
+        self.auto_expires_at = time.time() + auto_token["expires_in"]
         if self.save_token:
-            result["expiry_date"] = time.time() + result["expires_in"]
+            # result["expiry_date"] = time.time() + result["expires_in"]
             result["auto_token"] = auto_token["access_token"]
             result["auto_refresh"] = auto_token["refresh_token"]
             result["auto_expiry"] = time.time() + auto_token["expires_in"]
@@ -539,22 +586,15 @@ class Vehicle:
                 return result["result"]["messages"]
         return None
 
-    def get_vehicles(self):
-        """Make call to vehicles API"""
-        _LOGGER.debug("Getting Vehicles")
-        if self.region2 == "Australia":
-            countryheader = "AUS"
-        elif self.region2 == "North America & Canada":
-            countryheader = "USA"
-        elif self.region2 == "UK&Europe":
-            countryheader = "GBR"
-        else:
-            countryheader = "USA"
+    def vehicles(self):
+        """Get vehicle list from account"""
+        self.__acquire_token()
+
         headers = {
             **apiHeaders,
             "Auth-Token": self.token,
             "Application-Id": self.region,
-            "Countrycode": countryheader,
+            "Countrycode": self.countrycode,
             "Locale": "EN-US"
         }
 
@@ -720,7 +760,6 @@ class Vehicle:
             # New code to hanble checking states table from vehicle data
             response = r.json()
             command_id = response["id"]
-            # current_status = response["currentStatus"]
             i = 1
             while i < 14:
                 # Check status every 10 seconds for 90 seconds until command completes or time expires
@@ -753,5 +792,17 @@ class Vehicle:
                 _LOGGER.debug("Looping again")
                 time.sleep(10)
             # time.sleep(90)
+            return False
+        return False
+
+    def __request_and_poll(self, method, url):
+        """Poll API until status code is reached, locking + remote start"""
+        self.__acquire_token()
+        command = self.__make_request(method, url, None, None)
+
+        if command.status_code == 200:
+            result = command.json()
+            if "commandId" in result:
+                return self.__poll_status(url, result["commandId"])
             return False
         return False
