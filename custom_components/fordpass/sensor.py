@@ -526,6 +526,24 @@ class CarSensor(
     @property
     def icon(self):
         """Return sensor icon"""
+        # It feels ugly to load this all into this function, these should probably
+        # be broken up into subclasses for each type of sensor.
+        if self.sensor == "fuel":
+            # Check if we're tracking EV battery state of charge
+            battery_soc = self.data.get("xevBatteryStateOfCharge", {}).get("value")
+            if battery_soc is not None:
+                # Round to nearest 10 and clamp between 10 and 100
+                battery_level = round(battery_soc / 10) * 10
+                battery_level = max(10, min(100, battery_level))
+                
+                # Check if vehicle is charging
+                charge_status = self.data.get("xevBatteryChargeDisplayStatus", {}).get("value")
+                if charge_status == "CONNECTED":
+                    return f"mdi:battery-charging-{battery_level}"
+                # Use plain battery icon for 100% when not charging
+                if battery_level == 100:
+                    return "mdi:battery"
+                return f"mdi:battery-{battery_level}"
         return SENSORS[self.sensor]["icon"]
 
     @property
