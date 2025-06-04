@@ -1,4 +1,8 @@
 ## **Changelog**
+### Version 1.80 (WIP only update if you like living on the edge!)
+- Token storage moved to HA stores (BREAKING CHANGE!! will require reauth)
+- Ability to add other vehicles from account without reauthenticating
+- Tokens are now reused across vehicles on same account
 ### Version 1.70
 - New config flow to allow for a user to generate a token in their browser then enter into the application, bypasses WAF. 
 ### Version 1.69

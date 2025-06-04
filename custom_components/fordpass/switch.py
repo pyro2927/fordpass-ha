@@ -43,28 +43,20 @@ class Switch(FordPassEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs):
         """Send request to vehicle on switch status on"""
         if self.switch == "ignition":
-            await self.coordinator.hass.async_add_executor_job(
-                self.coordinator.vehicle.start
-            )
+            await self.coordinator.vehicle.start()
             await self.coordinator.async_request_refresh()
         elif self.switch == "guardmode":
-            await self.coordinator.hass.async_add_executor_job(
-                self.coordinator.vehicle.enableGuard
-            )
+            await self.coordinator.vehicle.enable_guard()
             await self.coordinator.async_request_refresh()
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
         """Send request to vehicle on switch status off"""
         if self.switch == "ignition":
-            await self.coordinator.hass.async_add_executor_job(
-                self.coordinator.vehicle.stop
-            )
+            await self.coordinator.vehicle.stop()
             await self.coordinator.async_request_refresh()
         elif self.switch == "guardmode":
-            await self.coordinator.hass.async_add_executor_job(
-                self.coordinator.vehicle.disableGuard
-            )
+            await self.coordinator.vehicle.disable_guard()
             await self.coordinator.async_request_refresh()
         self.async_write_ha_state()
 

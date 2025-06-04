@@ -7,11 +7,8 @@
 <!-- Wrote up a little note thing for the breaking change. Not sure if you want to use it but I figured this could be a good start or something since I was already editing the readme. -->
 > [!WARNING]
 > # Breaking Change
-> There is a new token obtaining system.
-> 
-> The token used by this integration is currently removed whenever the integration is updated. With this 1.70 update, the token will be wiped during every update, requiring users to manually add the token during the initial setup.
-> 
-> To prevent this issue, we will be moving the token file outside of the FordPass directory. This change will ensure that the token is preserved during updates. This will require reconfiguration of your setup.
+> This update changes how tokens are handled, in order to prevent deletion during future updates or changes. Tokens are now handled by the HA storage system and will persist updates and reboots properly. 
+This change will ensure that the token is preserved during updates. This will require reconfiguration of your setup.
 > Please see the Installation section, or the Wiki for help.
 
 <!-- Tried to update the update with the new information -->
