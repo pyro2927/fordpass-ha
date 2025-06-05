@@ -24,6 +24,9 @@ UPDATE_INTERVAL_DEFAULT = 900
 
 COORDINATOR = "coordinator"
 
+# Storage constants
+STORAGE_VERSION = 1
+STORAGE_KEY_PREFIX = "fordpass_token"
 
 REGION = "region"
 
