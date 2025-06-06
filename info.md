@@ -3,6 +3,9 @@
 - Token storage moved to HA stores (BREAKING CHANGE!! will require reauth)
 - Ability to add other vehicles from account without reauthenticating
 - Tokens are now reused across vehicles on same account
+- Fixed async error for status refresh
+- Fixed switch status when remote starting
+- Updated translations
 ### Version 1.70
 - New config flow to allow for a user to generate a token in their browser then enter into the application, bypasses WAF. 
 ### Version 1.69
