@@ -97,7 +97,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         
         if target_vin:
             # Refresh specific vehicle
-            await refresh_status(hass, service_call, coordinator)
+            _LOGGER.debug(f"Refreshing status for VIN: {target_vin}")
+            try:
+                # Use the async request_update method directly
+                result = await coordinator.vehicle.request_update(target_vin)
+                if result:
+                    _LOGGER.debug("Refresh command succeeded, updating coordinator data")
+                    # Wait a moment for the vehicle to process the command
+                    await asyncio.sleep(2)
+                    # Force refresh the coordinator data
+                    await coordinator.async_request_refresh()
+                else:
+                    _LOGGER.warning("Refresh command failed")
+            except Exception as e:
+                _LOGGER.error(f"Error during refresh: {e}")
         else:
             # Refresh all vehicles for this account
             all_entries = hass.config_entries.async_entries(DOMAIN)
@@ -106,7 +119,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             for config_entry in all_entries:
                 if config_entry.data.get(CONF_USERNAME) == current_username:
                     entry_coordinator = hass.data[DOMAIN][config_entry.entry_id][COORDINATOR]
-                    await refresh_status(hass, service_call, entry_coordinator)
+                    _LOGGER.debug(f"Refreshing status for VIN: {entry_coordinator.vin}")
+                    try:
+                        # Use the async request_update method directly
+                        result = await entry_coordinator.vehicle.request_update()
+                        if result:
+                            _LOGGER.debug("Refresh command succeeded, updating coordinator data")
+                            # Wait a moment for the vehicle to process the command
+                            await asyncio.sleep(2)
+                            # Force refresh the coordinator data
+                            await entry_coordinator.async_request_refresh()
+                        else:
+                            _LOGGER.warning(f"Refresh command failed for VIN: {entry_coordinator.vin}")
+                    except Exception as e:
+                        _LOGGER.error(f"Error during refresh for VIN {entry_coordinator.vin}: {e}")
 
     async def async_clear_tokens_service(service_call):
         """Clear tokens for this user account"""
@@ -171,18 +197,6 @@ async def options_update_listener(hass: HomeAssistant, entry: ConfigEntry):
     """Options listener to refresh config entries on option change"""
     _LOGGER.debug("OPTIONS CHANGE")
     await hass.config_entries.async_reload(entry.entry_id)
-
-
-async def refresh_status(hass, service, coordinator):
-    """Get latest vehicle status from vehicle, actively polls the car"""
-    _LOGGER.debug("Running Service")
-    vin = service.data.get("vin", "")
-    status = await coordinator.vehicle.request_update(vin)
-    if status == 401:
-        _LOGGER.debug("Invalid VIN")
-    elif status == 200:
-        _LOGGER.debug("Refresh Sent")
-
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
