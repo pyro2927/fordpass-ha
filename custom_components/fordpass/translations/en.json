@@ -41,7 +41,7 @@
             },
             "token": {
                 "title": "Setup Token",
-                "description": "Please enter the full token from the Location: header once logging in using the URL below",
+                "description": "Please enter the full token from the Location: header once logging in using the URL below. For help see [Obtaining a Token](https://github.com/itchannel/fordpass-ha/wiki/Obtaining-Tokens-(As-of-25-05-2024))",
                 "data": {
                     "url": "URL",
                     "tokenstr": "Token"
