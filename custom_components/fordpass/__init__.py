@@ -97,9 +97,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         
         if target_vin:
             # Refresh specific vehicle
-            await hass.async_add_executor_job(
-                refresh_status, hass, service_call, coordinator
-            )
+            await refresh_status(hass, service_call, coordinator)
         else:
             # Refresh all vehicles for this account
             all_entries = hass.config_entries.async_entries(DOMAIN)
@@ -108,9 +106,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             for config_entry in all_entries:
                 if config_entry.data.get(CONF_USERNAME) == current_username:
                     entry_coordinator = hass.data[DOMAIN][config_entry.entry_id][COORDINATOR]
-                    await hass.async_add_executor_job(
-                        refresh_status, hass, service_call, entry_coordinator
-                    )
+                    await refresh_status(hass, service_call, entry_coordinator)
 
     async def async_clear_tokens_service(service_call):
         """Clear tokens for this user account"""
@@ -177,11 +173,11 @@ async def options_update_listener(hass: HomeAssistant, entry: ConfigEntry):
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-def refresh_status(hass, service, coordinator):
+async def refresh_status(hass, service, coordinator):
     """Get latest vehicle status from vehicle, actively polls the car"""
     _LOGGER.debug("Running Service")
     vin = service.data.get("vin", "")
-    status = coordinator.vehicle.request_update(vin)
+    status = await coordinator.vehicle.request_update(vin)
     if status == 401:
         _LOGGER.debug("Invalid VIN")
     elif status == 200:
