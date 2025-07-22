@@ -71,10 +71,57 @@ class Vehicle:
         """Encode string to base64"""
         return urlsafe_b64encode(data).rstrip(b'=')
 
+    def _convert_4_to_5_segment_jwe(self, token_4_segment):
+        """Convert 4-segment JWE to 5-segment JWE by inserting empty IV"""
+        segments = token_4_segment.split('.')
+        
+        if len(segments) != 4:
+            _LOGGER.error(f"Expected 4 segments, got {len(segments)}")
+            return token_4_segment
+            
+        # JWE format: header.encrypted_key.iv.ciphertext.tag
+        # 4-segment:  header.payload.ciphertext.tag
+        # 5-segment:  header.encrypted_key.iv.ciphertext.tag
+        
+        # Try different approaches to fix the missing segment
+        approaches = [
+            # Approach 1: Insert empty IV between segments 1 and 2
+            f"{segments[0]}.{segments[1]}..{segments[2]}.{segments[3]}",
+            # Approach 2: Treat segment 1 as encrypted_key, add empty IV
+            f"{segments[0]}..{segments[1]}.{segments[2]}.{segments[3]}",
+            # Approach 3: Insert empty encrypted_key at position 1
+            f"{segments[0]}..{segments[1]}.{segments[2]}.{segments[3]}"
+        ]
+        
+        # For now, try approach 1 (most common JWE structure)
+        result = approaches[0]
+        _LOGGER.debug(f"Converted 4-segment to 5-segment: {len(result.split('.'))} segments")
+        return result
+
     async def generate_tokens(self, urlstring, code_verifier):
         """Generate tokens from auth code"""
-        code_new = urlstring.replace("fordapp://userauthorized/?code=", "")
-        _LOGGER.debug(f"Code: {code_new}, Country: {self.country_code}")
+        import urllib.parse
+        
+        # Properly parse URL to extract code parameter
+        if "fordapp://userauthorized/?code=" in urlstring:
+            code_new = urlstring.replace("fordapp://userauthorized/?code=", "")
+            # URL decode the code in case it contains encoded characters
+            code_new = urllib.parse.unquote_plus(code_new)
+        else:
+            _LOGGER.error(f"Invalid token URL format: {urlstring}")
+            return False
+            
+        _LOGGER.debug(f"Extracted code length: {len(code_new)}")
+        _LOGGER.debug(f"Code preview: {code_new[:50]}...{code_new[-50:] if len(code_new) > 100 else code_new}")
+        _LOGGER.debug(f"Country: {self.country_code}")
+        
+        # Check if we have a 4-segment token that needs conversion to 5-segment
+        token_segments = code_new.count('.')
+        _LOGGER.debug(f"Token has {token_segments + 1} segments")
+        
+        if token_segments == 3:  # 4-segment token
+            _LOGGER.warning("Received 4-segment JWE token, converting to 5-segment format")
+            code_new = self._convert_4_to_5_segment_jwe(code_new)
         
         data = {
             "client_id": "09852200-05fd-41f6-8c21-d36d3497dc64",
@@ -103,10 +150,15 @@ class Vehicle:
                 return await self.generate_fulltokens(token_data)
             else:
                 _LOGGER.error(f"Token generation failed: {response.status}")
+                _LOGGER.error(f"Response body: {text}")
+                # Check for specific JWE errors
+                if "JWE" in text or "invalid" in text.lower():
+                    _LOGGER.error("JWE token validation failed. Ford may have changed their OAuth implementation.")
                 return False
 
     async def generate_fulltokens(self, token):
         """Generate full tokens from initial token"""
+        # Try the B2C endpoint first (legacy)
         data = {"idpToken": token["access_token"]}
         headers = {**apiHeaders, "Application-Id": self.region}
         
@@ -116,16 +168,45 @@ class Vehicle:
             headers=headers,
             ssl=False
         ) as response:
-            _LOGGER.debug(f"Status: {response.status}")
+            _LOGGER.debug(f"B2C endpoint - Status: {response.status}")
             text = await response.text()
-            _LOGGER.debug(text)
+            _LOGGER.debug(f"B2C endpoint - Response: {text}")
+            
             if response.status == 200:
                 final_tokens = await response.json()
                 final_tokens["expiry_date"] = time.time() + final_tokens["expires_in"]
                 await self.write_token(final_tokens)
                 return True
+            
+            # If B2C fails with JWE error, try using the CI endpoint approach
+            if "JWE" in text or "invalid" in text.lower():
+                _LOGGER.warning("B2C token exchange failed, attempting CI flow workaround")
+                return await self._try_ci_token_exchange(token["access_token"])
             else:
                 _LOGGER.error(f"Full token generation failed: {response.status}")
+                return False
+
+    async def _try_ci_token_exchange(self, access_token):
+        """Fallback: Use CI token exchange endpoint"""
+        data = {"ciToken": access_token}
+        headers = {**apiHeaders, "Application-Id": self.region}
+        
+        async with self.session.post(
+            f"{GUARD_URL}/token/v2/cat-with-ci-access-token",
+            json=data,
+            headers=headers,
+        ) as response:
+            _LOGGER.debug(f"CI endpoint - Status: {response.status}")
+            text = await response.text()
+            _LOGGER.debug(f"CI endpoint - Response: {text}")
+            
+            if response.status == 200:
+                result = await response.json()
+                result["expiry_date"] = time.time() + result["expires_in"]
+                await self.write_token(result)
+                return True
+            else:
+                _LOGGER.error(f"CI token exchange also failed: {response.status}")
                 return False
 
     def generate_hash(self, code):
